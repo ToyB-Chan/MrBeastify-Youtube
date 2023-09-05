@@ -36,13 +36,15 @@ function applyOverlayToThumbnails() {
   thumbnailElements.forEach((thumbnailElement) => {
     // Apply overlay and add to processed thumbnails
     let loops = Math.random() > 0.001 ? 1 : 20; // Easter egg
-    thumbnailUrl = thumbnailElement.getAttribute("src"); 
-    seed = getStringHash(thumbnailUrl);
+    console.log(thumbnailElement)
+    let videoUrl = thumbnailElement.offsetParent.href.split("&")[0] // sometimes returns null (??)
+    let seed = getStringHash(videoUrl);
+    console.log(videoUrl)
 
     for (let i = 0; i < loops; i++) {
       // Get overlay image URL from your directory
-      const overlayImageIndex = getRandomImageFromDirectory(seed * (i + 1));
-      let flip = getRandomNumber(seed * (i + 1)) < 0.25; // 25% chance to flip the image
+      const overlayImageIndex = getRandomImageFromDirectory(seed + i);
+      let flip = getRandomNumber(seed + i) < 0.25; // 25% chance to flip the image
       let overlayImageURL
       if (flipBlacklist && flip && flipBlacklist.includes(overlayImageIndex)) {
         if (useAlternativeImages) {
@@ -77,6 +79,7 @@ function getRandomImageFromDirectory(seed) {
   // It selects a random index until it finds one that is not repeated
   while (last_indexes.includes(randomIndex) || randomIndex < 0) {
     randomIndex = Math.floor(getRandomNumber(seed) * highestImageIndex) + 1;
+    seed++;
   }
 
   // When it finds the non repeating index, it eliminates the oldest value,
@@ -88,16 +91,18 @@ function getRandomImageFromDirectory(seed) {
 }
 
 function getStringHash(str) {
-  x = 0;
+  let x = 0;
   for (let i = 0; i < str.length; i++) {
-    x = x * 37 + str.charCodeAt(i);
+    x = (x * 37 + str.charCodeAt(i)) % 100000;
   }
+  console.log("hash: " + x)
   return x;
 }
 
 function getRandomNumber(seed) {
-  x = Math.sin(seed) * 10000;
+  let x = Math.sin(seed + Math.E) * 100000;
   x = x - Math.floor(x);
+  console.log("random: " + x)
   return x;
 }
 
@@ -142,6 +147,7 @@ async function getHighestImageIndex() {
       max = mid - 1;
     }
   }
+
 
   // Max is the size of the image array
   highestImageIndex = max;
